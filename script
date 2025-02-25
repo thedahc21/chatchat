@@ -1,0 +1,35 @@
+const chatForm = document.getElementById('chatForm');
+const userInput = document.getElementById('userInput');
+const responseDiv = document.getElementById('response');
+
+chatForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const query = userInput.value.trim();
+  if (!query) return;
+
+  // Clear input field and display the user query
+  userInput.value = '';
+  responseDiv.innerHTML += `<p><strong>You:</strong> ${query}</p>`;
+
+  try {
+    // Adjust the URL depending on your deployment (Netlify auto-deploys functions at this path)
+    const res = await fetch('/.netlify/functions/openai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query })
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    responseDiv.innerHTML += `<p><strong>GPT:</strong> ${data.response}</p>`;
+  } catch (error) {
+    console.error('Error:', error);
+    responseDiv.innerHTML += `<p style="color:red;">Error: ${error.message}</p>`;
+  }
+});
